@@ -1,0 +1,41 @@
+import java.util.*;
+import java.io.*;
+
+public class SubwaySystem {
+    private Map<String, Station> stations;
+    private Map<String, Line> lines;
+    
+    public SubwaySystem(String dataFile) {
+        stations = new HashMap<>();
+        lines = new HashMap<>();
+        loadData(dataFile);
+    }
+    
+    private void loadData(String filename) {
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split("\t");
+                String lineName = parts[0];
+                String station1 = parts[1];
+                String station2 = parts[2];
+                double distance = Double.parseDouble(parts[3]);
+                
+                Line currentLine = lines.computeIfAbsent(lineName, Line::new);
+                Station s1 = stations.computeIfAbsent(station1, Station::new);
+                Station s2 = stations.computeIfAbsent(station2, Station::new);
+                
+                s1.addLine(currentLine);
+                s2.addLine(currentLine);
+                
+                currentLine.addStation(s1);
+                currentLine.addStation(s2);
+                
+                s1.addConnection(new Connection(s1, s2, distance, currentLine));
+                s2.addConnection(new Connection(s2, s1, distance, currentLine));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
