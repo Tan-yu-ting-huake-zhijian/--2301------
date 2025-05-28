@@ -1,0 +1,42 @@
+ public void printPath(Path path) {
+        List<Station> stations = path.getStations();
+        if (stations.isEmpty()) return;
+        
+        Station current = stations.get(0);
+        Line currentLine = null;
+        Station segmentStart = current;
+        
+        for (int i = 1; i < stations.size(); i++) {
+            Station next = stations.get(i);
+            Line commonLine = findCommonLine(current, next);
+            
+            if (commonLine != currentLine) {
+                if (currentLine != null) {
+                    System.out.printf("乘坐 %s 从 %s 到 %s%n", 
+                        currentLine.getName(), segmentStart.getName(), current.getName());
+                }
+                segmentStart = current;
+                currentLine = commonLine;
+            }
+            current = next;
+        }
+        
+        if (currentLine != null) {
+            System.out.printf("乘坐 %s 从 %s 到 %s%n", 
+                currentLine.getName(), segmentStart.getName(), current.getName());
+        }
+    }
+    
+    private Line findCommonLine(Station s1, Station s2) {
+        for (Line line : s1.getLines()) {
+            if (s2.getLines().contains(line)) {
+                return line;
+            }
+        }
+        return null;
+    }
+    public double calculateFare(Path path) {
+        double distance = path.getDistance();
+        return FareCalculator.calculateRegularFare(distance);
+    }
+    

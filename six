@@ -1,0 +1,127 @@
+class Line {
+    private String name;
+    private List<Station> stations;
+    
+    public Line(String name) {
+        this.name = name;
+        this.stations = new ArrayList<>();
+    }
+    
+    // Getters and setters
+    public void addStation(Station station) { stations.add(station); }
+    public String getName() { return name; }
+    public List<Station> getStations() { return stations; }
+}
+
+class Connection {
+    private Station station1;
+    private Station station2;
+    private double distance;
+    private Line line;
+    
+    public Connection(Station s1, Station s2, double distance, Line line) {
+        this.station1 = s1;
+        this.station2 = s2;
+        this.distance = distance;
+        this.line = line;
+    }
+    
+    // Getters
+    public Station getOtherStation(Station station) {
+        if (station.equals(station1)) return station2;
+        if (station.equals(station2)) return station1;
+        return null;
+    }
+    public double getDistance() { return distance; }
+    public Line getLine() { return line; }
+}
+
+class Path {
+    private List<Station> stations;
+    private double distance;
+    private int transfers;
+    
+    public Path(List<Station> stations) {
+        this.stations = new ArrayList<>(stations);
+        calculateMetrics();
+    }
+    
+    private void calculateMetrics() {
+        distance = 0.0;
+        transfers = 0;
+        Line currentLine = null;
+        
+        for (int i = 0; i < stations.size() - 1; i++) {
+            Station current = stations.get(i);
+            Station next = stations.get(i+1);
+            Connection conn = current.getConnectionTo(next);
+            
+            if (conn != null) {
+                distance += conn.getDistance();
+                Line line = conn.getLine();
+                if (currentLine != null && !line.equals(currentLine)) {
+                    transfers++;
+                }
+                currentLine = line;
+            }
+        }
+    }
+    
+    // Getters
+    public List<Station> getStations() { return stations; }
+    public double getDistance() { return distance; }
+    public int getTransfers() { return transfers; }
+}
+
+class FareCalculator {
+    public static double calculateRegularFare(double distance) {
+        if (distance <= 4) return 2.0;
+        if (distance <= 8) return 3.0;
+        if (distance <= 12) return 4.0;
+        if (distance <= 18) return 5.0;
+        if (distance <= 24) return 6.0;
+        if (distance <= 32) return 7.0;
+        if (distance <= 40) return 8.0;
+        return 8.0 + Math.ceil((distance - 40) / 20) * 1.0;
+    }
+}
+
+public class Test {
+    public static void main(String[] args) {
+        SubwaySystem subway = new SubwaySystem("subway.txt");
+        
+        // 测试1: 识别中转站
+        System.out.println("中转站:");
+        for (Station station : subway.getTransferStations()) {
+            System.out.println(station.getName() + ": " + station.getLines());
+        }
+        
+        // 测试2: 查询附近站点
+        System.out.println("\n华中科技大学站附近1km的站点:");
+        Map<Station, Double> nearby = subway.getNearbyStations("华中科技大学站", 1.0);
+        for (Map.Entry<Station, Double> entry : nearby.entrySet()) {
+            System.out.println(entry.getKey().getName() + ": " + entry.getValue() + "km");
+        }
+        
+        // 测试3: 查询所有路径
+        System.out.println("\n所有路径(光谷广场站 -> 汉口火车站):");
+        List<Path> allPaths = subway.findAllPaths("光谷广场站", "汉口火车站");
+        for (Path path : allPaths) {
+            subway.printPath(path);
+            System.out.println("距离: " + path.getDistance() + "km, 换乘: " + path.getTransfers());
+            System.out.println();
+        }
+        
+        // 测试4: 查询最短路径
+        System.out.println("\n最短路径(光谷广场站 -> 汉口火车站):");
+        Path shortestPath = subway.findShortestPath("光谷广场站", "汉口火车站");
+        subway.printPath(shortestPath);
+        System.out.println("距离: " + shortestPath.getDistance() + "km, 换乘: " + shortestPath.getTransfers());
+        
+        // 测试5: 计算票价
+        System.out.println("\n票价计算:");
+        System.out.println("普通票: " + subway.calculateFare(shortestPath) + "元");
+        System.out.println("武汉通: " + subway.calculateFare(shortestPath, "wuhantong") + "元");
+        System.out.println("日票: " + subway.calculateFare(shortestPath, "1day") + "元");
+    }
+}

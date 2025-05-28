@@ -1,0 +1,41 @@
+ public Set<Station> getTransferStations() {
+        Set<Station> transferStations = new HashSet<>();
+        for (Station station : stations.values()) {
+            if (station.getLines().size() >= 2) {
+                transferStations.add(station);
+            }
+        }
+        return transferStations;
+    }
+    public Map<Station, Double> getNearbyStations(String stationName, double maxDistance) {
+        if (!stations.containsKey(stationName)) {
+            throw new IllegalArgumentException("Station not found: " + stationName);
+        }
+        
+        Station start = stations.get(stationName);
+        Map<Station, Double> nearby = new HashMap<>();
+        Queue<Station> queue = new LinkedList<>();
+        Map<Station, Double> distances = new HashMap<>();
+        
+        queue.add(start);
+        distances.put(start, 0.0);
+        
+        while (!queue.isEmpty()) {
+            Station current = queue.poll();
+            double currentDist = distances.get(current);
+            
+            for (Connection conn : current.getConnections()) {
+                Station neighbor = conn.getOtherStation(current);
+                double newDist = currentDist + conn.getDistance();
+                
+                if (newDist <= maxDistance && (!distances.containsKey(neighbor) || newDist < distances.get(neighbor))) {
+                    distances.put(neighbor, newDist);
+                    queue.add(neighbor);
+                }
+            }
+        }
+        
+        distances.remove(start);
+        return distances;
+    }
+    

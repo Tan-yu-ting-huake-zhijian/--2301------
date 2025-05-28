@@ -1,0 +1,42 @@
+ public double calculateFare(Path path, String ticketType) {
+        double regularFare = calculateFare(path);
+        
+        switch (ticketType.toLowerCase()) {
+            case "wuhantong":
+                return regularFare * 0.9;
+            case "1day":
+            case "3day":
+            case "7day":
+                return 0.0; // 定期票已支付固定费用
+            default:
+                return regularFare;
+        }
+    }
+}
+class Station {
+    private String name;
+    private Set<Line> lines;
+    private List<Connection> connections;
+    
+    public Station(String name) {
+        this.name = name;
+        this.lines = new HashSet<>();
+        this.connections = new ArrayList<>();
+    }
+    
+    // Getters and setters
+    public void addLine(Line line) { lines.add(line); }
+    public void addConnection(Connection conn) { connections.add(conn); }
+    public Set<Line> getLines() { return lines; }
+    public List<Connection> getConnections() { return connections; }
+    public String getName() { return name; }
+    
+    public Connection getConnectionTo(Station other) {
+        for (Connection conn : connections) {
+            if (conn.getOtherStation(this).equals(other)) {
+                return conn;
+            }
+        }
+        return null;
+    }
+}
