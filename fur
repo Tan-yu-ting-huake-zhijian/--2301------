@@ -40,3 +40,4 @@
         return FareCalculator.calculateRegularFare(distance);
     }
     
+    
