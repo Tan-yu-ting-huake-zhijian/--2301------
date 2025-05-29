@@ -38,4 +38,18 @@ public class SubwaySystem {
             e.printStackTrace();
         }
     }
+    import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class SubwaySystem {
+    private static final Logger logger = LoggerFactory.getLogger(SubwaySystem.class);
     
+    private void loadData(String filename) {
+       
+        logger.info("开始加载地铁数据文件: {}", filename);
+        
+        logger.warn("第{}行数据格式错误: {}", lineNumber, line);
+        
+        logger.info("成功加载{}条线路，{}个站点", lines.size(), stations.size());
+    }
+}
