@@ -1,0 +1,75 @@
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+
+public class SubwayGUI extends Application {
+    private SubwaySystem subway;
+    
+    @Override
+    public void start(Stage primaryStage) {
+        subway = new SubwaySystem("subway.txt");
+        
+        VBox root = new VBox(10);
+        root.setPadding(new Insets(10));
+        
+        // 查询面板
+        HBox queryPanel = new HBox(10);
+        TextField startField = new TextField();
+        startField.setPromptText("起点站");
+        TextField endField = new TextField();
+        endField.setPromptText("终点站");
+        Button queryButton = new Button("查询");
+        TextArea resultArea = new TextArea();
+        resultArea.setEditable(false);
+        
+        queryButton.setOnAction(e -> {
+            String start = startField.getText();
+            String end = endField.getText();
+            
+            try {
+                Path path = subway.findShortestPath(start, end);
+                resultArea.clear();
+                resultArea.appendText("最短路径:\n");
+                subway.printPath(path);
+                resultArea.appendText("\n距离: " + path.getDistance() + "km\n");
+                resultArea.appendText("换乘次数: " + path.getTransfers() + "\n");
+                resultArea.appendText("票价:\n");
+                resultArea.appendText("普通票: " + subway.calculateFare(path) + "元\n");
+                resultArea.appendText("武汉通: " + subway.calculateFare(path, "wuhantong") + "元\n");
+                resultArea.appendText("日票: 0元\n");
+            } catch (Exception ex) {
+                resultArea.setText("错误: " + ex.getMessage());
+            }
+        });
+        
+        queryPanel.getChildren().addAll(new Label("起点:"), startField, 
+                                      new Label("终点:"), endField, queryButton);
+        
+        // 中转站列表
+        Button transferButton = new Button("显示中转站");
+        TextArea transferArea = new TextArea();
+        transferArea.setEditable(false);
+        
+        transferButton.setOnAction(e -> {
+            transferArea.clear();
+            Set<Station> transfers = subway.getTransferStations();
+            for (Station station : transfers) {
+                transferArea.appendText(station.getName() + ": " + station.getLines() + "\n");
+            }
+        });
+        
+        root.getChildren().addAll(queryPanel, resultArea, transferButton, transferArea);
+        
+        Scene scene = new Scene(root, 600, 500);
+        primaryStage.setTitle("武汉地铁模拟系统");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+    
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
